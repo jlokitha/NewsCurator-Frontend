@@ -1,7 +1,8 @@
 import {AxiosError} from "axios";
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import api from "../api/setupApi";
+import api from "../api/api";
 import User from "../model/User";
+import * as SecureStore from 'expo-secure-store';
 
 const initialState = {
     access_token: '',
@@ -10,7 +11,12 @@ const initialState = {
     isRegistered: false,
     loading: false,
     error: '',
-    user: {}
+    user: {
+        id: '',
+        name: '',
+        email: '',
+        password: ''
+    }
 }
 
 export const registerUser = createAsyncThunk(
@@ -35,6 +41,8 @@ export const loginUser = createAsyncThunk(
     async (user: User, {rejectWithValue}) => {
         try {
             const response = await api.post('/auth/login', user);
+            await SecureStore.setItemAsync('access_token', response.data.accessToken);
+            await SecureStore.setItemAsync('refresh_token', response.data.refreshToken);
             return response.data;
         } catch (err) {
             const error = err as AxiosError;
@@ -56,6 +64,7 @@ export const refreshToken = createAsyncThunk(
                     Authorization: `Bearer ${refresh_token}`
                 }
             });
+            await SecureStore.setItemAsync('access_token', response.data.acessToken);
             return response.data;
         } catch (err) {
             const error = err as AxiosError;
@@ -68,14 +77,16 @@ export const userReducer = createSlice({
     name: "userReducer",
     initialState,
     reducers: {
-        logOutUser: (state) => {
+        logoutUser: (state) => {
             state.access_token = '';
-            state.refresh_token = ''
+            state.refresh_token = '';
             state.isAuthenticated = false;
-            state.user = {};
-        },
-        clearError: (state) => {
-            state.error = '';
+            state.user = {
+                id: '',
+                name: '',
+                email: '',
+                password: ''
+            };
         }
     },
     extraReducers(builder) {
@@ -103,6 +114,7 @@ export const userReducer = createSlice({
                 state.user = action.payload.user;
                 state.isAuthenticated = true;
                 state.error = '';
+                console.log('User Login Success', action.payload);
             })
             .addCase(loginUser.rejected, (state, action) => {
                 console.log('User Login Failed', action.payload);
@@ -115,5 +127,5 @@ export const userReducer = createSlice({
     }
 })
 
-export const {logOutUser, clearError} = userReducer.actions;
+export const {logoutUser} = userReducer.actions;
 export default userReducer.reducer;
