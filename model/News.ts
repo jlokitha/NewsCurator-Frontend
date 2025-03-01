@@ -1,6 +1,6 @@
 export interface News {
     id?: number;
-    source: { id: string | null, name: string | null };
+    source: { id: string | null, name: string | null } | string;
     author: string | null;
     title: string;
     description: string | null;

@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Bookmark, BookmarkCheck, Clock, Calendar } from 'lucide-react-native';
 import {News} from "../../model/News";
 import {timeAgo} from "../../utils/timeUtil";
+import BookmarkButton from "./article/BookmarkButton";
 
 interface ArticleCardProps {
     news: News;
@@ -29,21 +30,14 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ news, onPress, onBookmarkTogg
                 </View>
             )}
 
-            <TouchableOpacity
-                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 justify-center items-center"
-                onPress={onBookmarkToggle}
-            >
-                {news.isBookmarked ? (
-                    <BookmarkCheck size={20} color="#A78BFA" />
-                ) : (
-                    <Bookmark size={20} color="white" />
-                )}
-            </TouchableOpacity>
+            <BookmarkButton isBookmarked={news.isBookmarked ?? false} toggleBookmark={onBookmarkToggle}/>
         </View>
 
         <View className="p-4">
             <View className="flex-row items-center mb-2">
-                <Text className="text-primary-light font-medium text-sm">{news.source.name}</Text>
+                <Text className="text-primary-light font-medium text-sm">
+                    {typeof news.source === 'string' ? news.source : news.source.name}
+                </Text>
                 <View className="w-1 h-1 rounded-full bg-gray-500 mx-2" />
                 <View className="flex-row items-center">
                     <Clock size={12} color="#9CA3AF" />

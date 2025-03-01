@@ -3,13 +3,15 @@ import {View, ActivityIndicator} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from '../../store/store';
-import {getNews, getNewsByKeywords} from '../../reducers/newsReducer';
+import {deleteNews, getNews, getNewsByKeywords, saveNews} from '../../reducers/newsReducer';
 import {News} from '../../model/News';
 import NoArticle from "../../components/home/ui/NoArticle";
 import DiscoverHeader from "../../components/home/ui/DiscoverHeader";
 import ScrollableCategories from "../../components/home/ui/ScrollableCategories";
 import NewsList from "../../components/home/ui/NewsList";
+
 import SearchBar from "../../components/home/ui/SearchBar";
+import {useRouter} from "expo-router";
 
 export default function HomeScreen() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -19,15 +21,19 @@ export default function HomeScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedArticle, setSelectedArticle] = useState<News>()
 
-    const articles = useSelector((state: RootState) => state.newsReducer);
+    const articles = useSelector((state: RootState) => state.newsReducer.news);
+    const user = useSelector((state: RootState) => state.userReducer.user);
     const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
 
     const scrollToTopTrigger = page === 1;
 
     useEffect(() => {
+        console.log('user', user);
         setLoading(true);
-        dispatch(getNews(1)).then(() => setLoading(false));
+        dispatch(getNews({page: 1, userId: Number(user.id)})).then(() => setLoading(false));
     }, [dispatch]);
 
     const handleSearchSubmit = () => {
@@ -35,9 +41,15 @@ export default function HomeScreen() {
             setPage(1);
             setSelectedCategory('All');
             setCurrentQuery(searchQuery);
-            dispatch(getNewsByKeywords({keywords: searchQuery, page: 1}));
+            dispatch(getNewsByKeywords({keywords: searchQuery, page: 1, userId: Number(user.id)}));
         }
     };
+
+    const handleClear = () => {
+        setSearchQuery('');
+        setLoading(true);
+        dispatch(getNews({page: 1, userId: Number(user.id)})).then(() => setLoading(false));
+    }
 
     const handleCategorySelect = (category: string) => {
         setPage(1);
@@ -45,9 +57,9 @@ export default function HomeScreen() {
         setSearchQuery('');
         setSelectedCategory(category);
         if (category === 'All') {
-            dispatch(getNews(1));
+            dispatch(getNews({page: 1, userId: Number(user.id)}));
         } else {
-            dispatch(getNewsByKeywords({keywords: category, page: 1}));
+            dispatch(getNewsByKeywords({keywords: category, page: 1, userId: Number(user.id)}));
         }
     };
 
@@ -58,8 +70,8 @@ export default function HomeScreen() {
             setPage(nextPage);
             const loadMoreAction =
                 currentQuery.trim() !== ''
-                    ? getNewsByKeywords({keywords: currentQuery, page: nextPage})
-                    : getNews(nextPage);
+                    ? getNewsByKeywords({keywords: currentQuery, page: nextPage, userId: Number(user.id)})
+                    : getNews({page: nextPage, userId: Number(user.id)});
             dispatch(loadMoreAction as any).finally(() => setLoadingMore(false));
         }
     };
@@ -68,26 +80,46 @@ export default function HomeScreen() {
         setRefreshing(true);
         setPage(1);
         if (currentQuery.trim() !== '') {
-            dispatch(getNewsByKeywords({keywords: currentQuery, page: 1}));
+            dispatch(getNewsByKeywords({keywords: currentQuery, page: 1, userId: Number(user.id)}));
         } else {
-            dispatch(getNews(1));
+            dispatch(getNews({page: 1, userId: Number(user.id)}));
         }
         setTimeout(() => setRefreshing(false), 1500);
     };
 
-    const toggleBookmark = (news: News) => {
-        // TODO: implement bookmark logic
+    const handleBookmark = (news: News, index: number) => {
+        const sourceName = typeof news.source === 'string' ? news.source : news.source.name;
+        const data = {
+            source: sourceName,
+            author: news.author,
+            title: news.title,
+            description: news.description,
+            url: news.url,
+            urlToImage: news.urlToImage,
+            publishedAt: news.publishedAt,
+            content: news.content,
+        }
+        if (news.isBookmarked) {
+            dispatch(deleteNews({ userId: Number(user.id), newsId: news.id!, index: index }));
+        } else {
+            dispatch(saveNews({ userId: Number(user.id), news: data, index: index }));
+        }
     };
 
-    const goToArticleDetail = (news: News) => {
-        // TODO: implement navigation to article details
+    const goToArticleDetail = (index: number) => {
+        router.push(`/article/${index}`);
     };
 
     return (
         <SafeAreaView className="flex-1 bg-background">
             <View className="flex-1 px-4">
                 <DiscoverHeader/>
-                <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSubmit={handleSearchSubmit}/>
+                <SearchBar
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    onSubmit={handleSearchSubmit}
+                    onClear={handleClear}
+                />
                 <ScrollableCategories
                     onCategorySelect={handleCategorySelect}
                     selectedCategory={selectedCategory}
@@ -107,7 +139,7 @@ export default function HomeScreen() {
                         onRefresh={onRefresh}
                         onLoadMore={handleLoadMore}
                         onArticlePress={goToArticleDetail}
-                        onBookmarkToggle={toggleBookmark}
+                        onBookmarkToggle={handleBookmark}
                         scrollToTopTrigger={scrollToTopTrigger}
                     />
                 )}

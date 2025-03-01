@@ -1,8 +1,9 @@
 import axios from "axios";
-import {useAccessToken, useRefreshToken} from "../utils/axiosUtils";
+import {useAccessToken} from "../utils/axiosUtils";
+import {refreshTokenCall} from "./refreshToken";
 
 const api = axios.create({
-    baseURL: "http://192.168.1.100:5000/api/v1",
+    baseURL: "http://192.168.43.254:5000/api/v1",
     withCredentials: true,
 });
 
@@ -11,9 +12,9 @@ api.interceptors.request.use(
         if (!config.url?.startsWith('/auth')) {
             const token = await useAccessToken();
             if (token) {
-                console.log('Token found', token);
+                console.log('Token found', config.url, token);
                 config.headers = config.headers || {};
-                config.headers.authorization = `Bearer ${token}`;
+                config.headers.Authorization = `Bearer ${token}`;
             }
         }
         return config;
@@ -34,12 +35,11 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                await useRefreshToken();
-                const newToken = await useAccessToken();
+                const newToken = await refreshTokenCall();
                 if (newToken) {
                     console.log('New token', newToken);
                     originalRequest.headers = originalRequest.headers || {};
-                    originalRequest.headers.authorization = `Bearer ${newToken}`;
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     return api(originalRequest);
                 }
             } catch (refreshError) {

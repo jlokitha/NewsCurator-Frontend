@@ -9,8 +9,8 @@ interface NewsListProps {
     refreshing: boolean;
     onRefresh: () => void;
     onLoadMore: () => void;
-    onArticlePress: (news: News) => void;
-    onBookmarkToggle: (news: News) => void;
+    onArticlePress: (index: number) => void;
+    onBookmarkToggle: (news: News, index: number) => void;
     scrollToTopTrigger: boolean;
 }
 
@@ -36,11 +36,11 @@ const NewsList: React.FC<NewsListProps> = ({
         <FlatList
             ref={flatListRef}
             data={articles}
-            renderItem={({item}) => (
+            renderItem={({item, index}) => (
                 <ArticleCard
                     news={item}
-                    onPress={() => onArticlePress(item)}
-                    onBookmarkToggle={() => onBookmarkToggle(item)}
+                    onPress={() => onArticlePress(index)}
+                    onBookmarkToggle={() => onBookmarkToggle(item, index)}
                 />
             )}
             keyExtractor={(_, index) => index.toString()}

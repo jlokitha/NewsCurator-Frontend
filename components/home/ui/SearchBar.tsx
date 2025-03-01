@@ -6,9 +6,10 @@ interface SearchBarProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     onSubmit: () => void;
+    onClear: () => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({searchQuery, setSearchQuery, onSubmit}) => (
+const SearchBar: React.FC<SearchBarProps> = ({searchQuery, setSearchQuery, onSubmit, onClear}) => (
     <View className="my-4">
         <View className="flex-row items-center bg-background-light px-4 py-3">
             <Search size={20} color="#6B7280"/>
@@ -21,7 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({searchQuery, setSearchQuery, onSub
                 onSubmitEditing={onSubmit}
             />
             {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <TouchableOpacity onPress={() => onClear()}>
                     <Text className="text-gray-400">Clear</Text>
                 </TouchableOpacity>
             )}

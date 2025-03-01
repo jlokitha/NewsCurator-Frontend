@@ -12,7 +12,7 @@ const initialState = {
     loading: false,
     error: '',
     user: {
-        id: '',
+        id: 0,
         name: '',
         email: '',
         password: ''
@@ -54,25 +54,6 @@ export const loginUser = createAsyncThunk(
     }
 )
 
-export const refreshToken = createAsyncThunk(
-    "user/refreshToken",
-    async (refresh_token: string) => {
-
-        try {
-            const response = await api.post('/auth/refresh-token', null, {
-                headers: {
-                    Authorization: `Bearer ${refresh_token}`
-                }
-            });
-            await SecureStore.setItemAsync('access_token', response.data.acessToken);
-            return response.data;
-        } catch (err) {
-            const error = err as AxiosError;
-            console.log(error);
-        }
-    }
-);
-
 export const userReducer = createSlice({
     name: "userReducer",
     initialState,
@@ -82,7 +63,7 @@ export const userReducer = createSlice({
             state.refresh_token = '';
             state.isAuthenticated = false;
             state.user = {
-                id: '',
+                id: 0,
                 name: '',
                 email: '',
                 password: ''
@@ -119,10 +100,6 @@ export const userReducer = createSlice({
             .addCase(loginUser.rejected, (state, action) => {
                 console.log('User Login Failed', action.payload);
                 state.error = action.payload as string;
-            })
-        builder
-            .addCase(refreshToken.fulfilled, (state, action) => {
-                state.access_token = action.payload.accessToken
             })
     }
 })
