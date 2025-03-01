@@ -3,14 +3,14 @@ import {View, ActivityIndicator} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from '../../store/store';
-import {deleteNews, getNews, getNewsByKeywords, saveNews} from '../../reducers/newsReducer';
+import {deleteNews, getBookmarkedNews, getNews, getNewsByKeywords, saveNews} from '../../reducers/newsReducer';
 import {News} from '../../model/News';
 import NoArticle from "../../components/home/ui/NoArticle";
 import ScrollableCategories from "../../components/home/ui/ScrollableCategories";
 import NewsList from "../../components/home/ui/NewsList";
 
 import SearchBar from "../../components/home/ui/SearchBar";
-import {useRouter} from "expo-router";
+import {useFocusEffect, useRouter} from "expo-router";
 import PageHeader from "../../components/home/ui/PageHeader";
 
 export default function HomeScreen() {
@@ -29,11 +29,17 @@ export default function HomeScreen() {
 
     const scrollToTopTrigger = page === 1;
 
-    useEffect(() => {
-        console.log('user', user);
-        setLoading(true);
-        dispatch(getNews({page: 1, userId: Number(user.id)})).then(() => setLoading(false));
-    }, [dispatch]);
+    useFocusEffect(
+        React.useCallback(() => {
+            console.log('HomeScreen useFocusEffect');
+            setLoading(true);
+            dispatch(getNews({page: 1, userId: Number(user.id)})).then(() => setLoading(false));
+            return () => {
+                console.log('Cleanup useFocusEffect');
+            };
+        }, [])
+    );
+
 
     const handleSearchSubmit = () => {
         if (searchQuery.trim() !== '') {

@@ -27,7 +27,14 @@ export default function TabLayout() {
                 name="bookmarks"
                 options={{
                     title: 'Bookmarks',
-                    tabBarIcon: ({ color, size }) => <Bookmark size={size} color={color} />,
+                    tabBarIcon: ({color, size}) => <Bookmark size={size} color={color}/>,
+                }}
+            />
+            <Tabs.Screen
+                name="profile"
+                options={{
+                    title: 'Profile',
+                    tabBarIcon: ({color, size}) => <User size={size} color={color}/>,
                 }}
             />
         </Tabs>

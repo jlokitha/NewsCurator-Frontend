@@ -12,7 +12,7 @@ interface SettingsItemProps {
     showBorder?: boolean;
 }
 
-const SettingsItem: React.FC<SettingsItemProps> = ({
+const SettingsItemBtn: React.FC<SettingsItemProps> = ({
     icon,
     title,
     value,
@@ -53,4 +53,4 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
     );
 };
 
-export default SettingsItem;
+export default SettingsItemBtn;
