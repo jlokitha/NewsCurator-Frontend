@@ -23,6 +23,13 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="bookmarks"
+                options={{
+                    title: 'Bookmarks',
+                    tabBarIcon: ({ color, size }) => <Bookmark size={size} color={color} />,
+                }}
+            />
         </Tabs>
     );
 }

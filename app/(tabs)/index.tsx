@@ -6,12 +6,12 @@ import {AppDispatch, RootState} from '../../store/store';
 import {deleteNews, getNews, getNewsByKeywords, saveNews} from '../../reducers/newsReducer';
 import {News} from '../../model/News';
 import NoArticle from "../../components/home/ui/NoArticle";
-import DiscoverHeader from "../../components/home/ui/DiscoverHeader";
 import ScrollableCategories from "../../components/home/ui/ScrollableCategories";
 import NewsList from "../../components/home/ui/NewsList";
 
 import SearchBar from "../../components/home/ui/SearchBar";
 import {useRouter} from "expo-router";
+import PageHeader from "../../components/home/ui/PageHeader";
 
 export default function HomeScreen() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +21,6 @@ export default function HomeScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedArticle, setSelectedArticle] = useState<News>()
 
     const articles = useSelector((state: RootState) => state.newsReducer.news);
     const user = useSelector((state: RootState) => state.userReducer.user);
@@ -88,9 +87,8 @@ export default function HomeScreen() {
     };
 
     const handleBookmark = (news: News, index: number) => {
-        const sourceName = typeof news.source === 'string' ? news.source : news.source.name;
         const data = {
-            source: sourceName,
+            source: news.source.name,
             author: news.author,
             title: news.title,
             description: news.description,
@@ -100,20 +98,23 @@ export default function HomeScreen() {
             content: news.content,
         }
         if (news.isBookmarked) {
-            dispatch(deleteNews({ userId: Number(user.id), newsId: news.id!, index: index }));
+            dispatch(deleteNews({ userId: Number(user.id), newsId: news.id!, index: `news-${index}` }));
         } else {
-            dispatch(saveNews({ userId: Number(user.id), news: data, index: index }));
+            dispatch(saveNews({ userId: Number(user.id), news: data, index: `news-${index}` }));
         }
     };
 
     const goToArticleDetail = (index: number) => {
-        router.push(`/article/${index}`);
+        router.push(`/article/news-${index}`);
     };
 
     return (
         <SafeAreaView className="flex-1 bg-background">
             <View className="flex-1 px-4">
-                <DiscoverHeader/>
+                <PageHeader
+                    title={'Discover'}
+                    subtitle={'Get the latest news from around the world'}
+                />
                 <SearchBar
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}

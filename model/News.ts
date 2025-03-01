@@ -1,6 +1,6 @@
 export interface News {
     id?: number;
-    source: { id: string | null, name: string | null } | string;
+    source: { id: string | null, name: string | null };
     author: string | null;
     title: string;
     description: string | null;
@@ -8,5 +8,5 @@ export interface News {
     urlToImage: string | null;
     publishedAt: string;
     content: string | null;
-    isBookmarked?: boolean;
+    isBookmarked: boolean;
 }
