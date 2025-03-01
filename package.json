@@ -14,7 +14,9 @@
     "expo": "~52.0.37",
     "expo-linear-gradient": "^14.0.2",
     "expo-router": "^4.0.17",
+    "expo-secure-store": "^14.0.1",
     "expo-status-bar": "~2.0.1",
+    "lodash": "^4.17.21",
     "lucide-react-native": "^0.476.0",
     "nativewind": "^4.1.23",
     "react": "18.3.1",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/lodash": "^4.17.15",
     "@types/react": "~18.3.12",
     "typescript": "^5.3.3"
   },

@@ -1,23 +1,33 @@
-import {store} from "../store/store";
-import {refreshToken} from "../reducers/userReducer";
-import api from "./setupApi";
+import axios from "axios";
+import {useAccessToken} from "../utils/axiosUtils";
+import {refreshTokenCall} from "./refreshToken";
+
+const api = axios.create({
+    baseURL: "http://192.168.43.254:5000/api/v1",
+    withCredentials: true,
+});
 
 api.interceptors.request.use(
-    (config) => {
+    async (config) => {
         if (!config.url?.startsWith('/auth')) {
-            if (store.getState().userReducer.access_token) {
+            const token = await useAccessToken();
+            if (token) {
+                console.log('Token found', config.url, token);
                 config.headers = config.headers || {};
-                config.headers.Authorization = `Bearer ${store.getState().userReducer.access_token}`;
+                config.headers.Authorization = `Bearer ${token}`;
             }
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        return Promise.reject(error);
+    }
 );
 
-// Response interceptor
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
 
@@ -25,17 +35,14 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const newToken = await store.dispatch(
-                    refreshToken(store.getState().userReducer.refresh_token)
-                );
+                const newToken = await refreshTokenCall();
                 if (newToken) {
+                    console.log('New token', newToken);
                     originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     return api(originalRequest);
                 }
             } catch (refreshError) {
-                console.error('Token refresh failed:', refreshError);
-                return Promise.reject(refreshError);
             }
         }
         return Promise.reject(error);
