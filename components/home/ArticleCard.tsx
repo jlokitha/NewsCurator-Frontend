@@ -36,7 +36,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ news, onPress, onBookmarkTogg
         <View className="p-4">
             <View className="flex-row items-center mb-2">
                 <Text className="text-primary-light font-medium text-sm">
-                    {typeof news.source === 'string' ? news.source : news.source.name}
+                    {news.source.name}
                 </Text>
                 <View className="w-1 h-1 rounded-full bg-gray-500 mx-2" />
                 <View className="flex-row items-center">

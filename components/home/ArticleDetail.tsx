@@ -44,7 +44,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({article, toggleBook
                 <BackButton/>
 
                 {/* Action buttons */}
-                <BookmarkButton isBookmarked={article.isBookmarked ?? false} toggleBookmark={toggleBookmark}/>
+                <BookmarkButton isBookmarked={article.isBookmarked} toggleBookmark={toggleBookmark}/>
             </View>
 
             {/* Article Content */}
@@ -54,7 +54,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({article, toggleBook
 
                 <View className="flex-row items-center mb-4">
                     <Text className="text-primary-light font-medium">
-                        {typeof article.source === 'string' ? article.source : article.source.name}
+                        {article.source.name}
                     </Text>
                     <View className="w-1 h-1 rounded-full bg-gray-500 mx-2"/>
                     <View className="flex-row items-center">
@@ -88,7 +88,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({article, toggleBook
                 {/* Source link */}
                 <ReadFullArticleButton
                     url={article.url}
-                    sourceName={typeof article.source === 'string' ? article.source : article.source.name || 'Unknown Source'}
+                    sourceName={article.source.name || 'Unknown Source'}
                 />
             </View>
         </ScrollView>

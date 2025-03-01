@@ -23,11 +23,19 @@ export default function ArticleDetailScreen() {
     const [isBookmarked, setIsBookmarked] = useState(false);
 
     const news = useSelector((state: RootState) => state.newsReducer.news)
+    const bookmarkedArticles = useSelector((state: RootState) => state.newsReducer.bookmarked);
     const user = useSelector((state: RootState) => state.userReducer.user);
     const dispatch = useDispatch<AppDispatch>();
 
     useEffect(() => {
-        const foundArticle = news[Number(index.index)];
+        let foundArticle: News | undefined;
+        const indexValue = Array.isArray(index.index) ? index.index[0] : index.index;
+
+        if (indexValue.startsWith('news-')) {
+            foundArticle = news[Number(indexValue.replace('news-', ''))];
+        } else if (indexValue.startsWith('bookmark-')) {
+            foundArticle = bookmarkedArticles[Number(indexValue.replace('bookmark-', ''))];
+        }
 
         if (foundArticle) {
             setArticle(foundArticle);
@@ -35,14 +43,13 @@ export default function ArticleDetailScreen() {
         }
 
         setLoading(false);
-    }, [index]);
+    }, [index, news, bookmarkedArticles]);
 
     const toggleBookmark = () => {
         if (!article) return;
 
-        const sourceName = typeof article.source === 'string' ? article.source : article.source.name;
         const data = {
-            source: sourceName,
+            source: article.source.name,
             author: article.author,
             title: article.title,
             description: article.description,
@@ -52,27 +59,17 @@ export default function ArticleDetailScreen() {
             content: article.content,
         };
 
+        const indexValue = Array.isArray(index.index) ? index.index[0] : index.index;
+
         if (isBookmarked) {
-            dispatch(deleteNews({ userId: Number(user.id), newsId: article.id!, index: Number(index.index) }));
+            console.log('Deleting bookmark');
+            dispatch(deleteNews({ userId: Number(user.id), newsId: article.id!, index: indexValue }));
         } else {
-            dispatch(saveNews({ userId: Number(user.id), news: data, index: Number(index.index) }));
+            console.log('Saving bookmark');
+            dispatch(saveNews({ userId: Number(user.id), news: data, index: indexValue }));
         }
 
         setIsBookmarked(!isBookmarked);
-    };
-
-    const shareArticle = async () => {
-        if (!article) return;
-
-        try {
-            await Share.share({
-                message: `Check out this article: ${article.title} - ${article.url}`,
-                url: article.url,
-                title: article.title,
-            });
-        } catch (error) {
-            console.error('Error sharing article:', error);
-        }
     };
 
     if (loading) {

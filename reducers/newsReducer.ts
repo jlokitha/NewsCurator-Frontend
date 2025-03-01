@@ -3,11 +3,11 @@ import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import api from "../api/api";
 import {isEqual} from 'lodash';
 
-const initialState: { news: News[], bookmarked: News[] } = { news: [], bookmarked: [] };
+const initialState: { news: News[], bookmarked: News[] } = {news: [], bookmarked: []};
 
 export const saveNews = createAsyncThunk(
     "news/saveNews",
-    async ({userId, news, index}: { userId: number, news: any, index: number }) => {
+    async ({userId, news, index}: { userId: number, news: any, index: string }) => {
         try {
             const response = await api.post(`/news/${userId}`, news);
             return {news: response.data, index};
@@ -20,13 +20,13 @@ export const saveNews = createAsyncThunk(
 
 export const deleteNews = createAsyncThunk(
     "news/deleteNews",
-    async ({userId, newsId, index}: { userId: number, newsId: number, index: number }) => {
+    async ({userId, newsId, index}: { userId: number, newsId: number, index: string }) => {
         try {
             await api.delete(`/news/${userId}/${newsId}`);
-            return { newsId, index };
+            return {newsId, index};
         } catch (err) {
             console.log('Error', err);
-            return { newsId, index };
+            return {newsId, index};
         }
     }
 );
@@ -57,6 +57,19 @@ export const getNewsByKeywords = createAsyncThunk(
     }
 );
 
+export const getBookmarkedNews = createAsyncThunk(
+    "news/getBookmarkedNews",
+    async (userId: number) => {
+        try {
+            const response = await api.get(`/news/${userId}`);
+            return response.data;
+        } catch (err) {
+            console.log('Error', err);
+            return [];
+        }
+    }
+);
+
 const newsReducer = createSlice({
     name: "news",
     initialState,
@@ -65,17 +78,20 @@ const newsReducer = createSlice({
         builder
             .addCase(saveNews.fulfilled, (state, action) => {
                 const {news, index} = action.payload;
-                if (index !== -1 && index < state.news.length) {
-                    state.news[index] = news;
+                if (index.startsWith('news-')) {
+                    state.news[Number(index.split('-')[1])] = news;
                 } else {
-                    state.news.push(news);
+                    state.bookmarked.push(news);
                 }
             });
         builder
             .addCase(deleteNews.fulfilled, (state, action) => {
                 const {newsId, index} = action.payload;
-                state.bookmarked = state.bookmarked.filter(news => news.id !== newsId);
-                state.news[index].isBookmarked = false;
+                if (index.startsWith('news-')) {
+                    state.news[Number(index.split('-')[1])].isBookmarked = false;
+                } else {
+                    state.bookmarked = state.bookmarked.filter(news => news.id !== newsId);
+                }
             });
         builder.addCase(getNews.fulfilled, (state, action) => {
             const {data, page} = action.payload;
@@ -99,6 +115,10 @@ const newsReducer = createSlice({
                 state.news = [...state.news, ...newArticles];
             }
         });
+        builder
+            .addCase(getBookmarkedNews.fulfilled, (state, action) => {
+                state.bookmarked = action.payload;
+            });
     }
 });
 
