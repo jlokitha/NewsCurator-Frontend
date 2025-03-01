@@ -6,7 +6,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useRouter} from 'expo-router';
+import {useFocusEffect, useRouter} from 'expo-router';
 import {useDispatch, useSelector} from 'react-redux';
 import {BookmarkCheck} from 'lucide-react-native';
 import PageHeader from "../../components/home/ui/PageHeader";
@@ -23,11 +23,16 @@ export default function BookmarksScreen() {
     const bookmarkedArticles = useSelector((state: RootState) => state.newsReducer.bookmarked);
     const user = useSelector((state: RootState) => state.userReducer.user);
 
-    useEffect(() => {
-        setLoading(true);
-        dispatch(getBookmarkedNews(user.id)).then(() => setLoading(false));
-        console.log('Bookmarked Articles', bookmarkedArticles);
-    }, [dispatch]);
+    useFocusEffect(
+        React.useCallback(() => {
+            console.log('BookmarkScreen useFocusEffect');
+            setLoading(true);
+            dispatch(getBookmarkedNews(user.id)).then(() => setLoading(false));
+            return () => {
+                console.log('Cleanup useFocusEffect');
+            };
+        }, [])
+    );
 
     const goToArticleDetail = (index: number) => {
         router.push(`/article/bookmark-${index}`);
